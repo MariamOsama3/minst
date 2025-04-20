@@ -1,39 +1,33 @@
 import streamlit as st
-import numpy as npgit
-
-
-
-
+import numpy as np
+from tensorflow.keras.models import load_model
 from PIL import Image
-import tensorflow as tf
 
-from keras.models import load_model  
-from tensorflow.keras.models import load_model  # Keep this if using TF < 2.16
-# Load the pre-trained LSTM model
-model = load_model('mnist_lstm_model.h5')
+# Load model with error handling
+try:
+    model = load_model('mnist_lstm_model.h5')
+except Exception as e:
+    st.error(f"Model loading failed: {str(e)}")
+    st.stop()
 
-st.title("MNIST Digit Classifier with LSTM")
-st.write("Upload a 28x28 grayscale image of a digit (0-9)")
+st.title("MNIST Digit Classifier")
+st.write("Upload a 28x28 image of a handwritten digit")
 
-# Image uploader
-uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "png", "jpeg"])
+uploaded_file = st.file_uploader("Choose image...", type=["png","jpg","jpeg"])
 
-if uploaded_file is not None:
-    # Process the image
-    image = Image.open(uploaded_file).convert('L')  # Convert to grayscale
-    image = image.resize((28, 28))
-    img_array = np.array(image)
-    
-    # Normalize and reshape for LSTM input
-    img_array = img_array.astype('float32') / 255.0
-    img_array = img_array.reshape(1, 28, 28)  # Reshape to (1, 28, 28)
-    
-    # Show image
-    st.image(image, caption='Uploaded Image', width=200)
-    
-    # Make prediction
-    prediction = model.predict(img_array)
-    predicted_digit = np.argmax(prediction)
-    
-    st.write(f"Predicted Digit: {predicted_digit}")
-    st.write(f"Confidence: {np.max(prediction) * 100:.2f}%")
+if uploaded_file:
+    try:
+        img = Image.open(uploaded_file).convert('L').resize((28,28))
+        img_array = np.array(img) / 255.0
+        img_array = img_array.reshape(1, 28, 28)
+        
+        st.image(img, caption="Your Image", width=200)
+        
+        prediction = model.predict(img_array)
+        digit = np.argmax(prediction)
+        confidence = np.max(prediction)
+        
+        st.success(f"Prediction: {digit} (Confidence: {confidence:.2%})")
+        
+    except Exception as e:
+        st.error(f"Error: {str(e)}")
