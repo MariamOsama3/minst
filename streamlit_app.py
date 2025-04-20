@@ -1,9 +1,11 @@
 import streamlit as st
 import numpy as np
-from tensorflow.keras.models import load_model
+
 from PIL import Image
 import tensorflow as tf
 
+from keras.models import load_model  
+from tensorflow.keras.models import load_model  # Keep this if using TF < 2.16
 # Load the pre-trained LSTM model
 model = load_model('mnist_lstm_model.h5')
 
